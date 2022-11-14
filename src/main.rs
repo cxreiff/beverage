@@ -15,8 +15,8 @@ fn main() {
         .insert_resource(bevy::render::texture::ImageSettings::default_nearest())
         .insert_resource(ClearColor(Color::rgb(0.4, 0.4, 0.4)))
         .insert_resource(WindowDescriptor {
-            width: 800.,
-            height: 600.,
+            width: 600.,
+            height: 800.,
             title: "beverage".to_string(),
             canvas: Some("#bevy".to_owned()),
             ..Default::default()
