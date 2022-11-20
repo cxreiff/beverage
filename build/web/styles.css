@@ -1,8 +1,3 @@
-body, html {
-    height: 100%;
-    overscroll-behavior: contain;
-    touch-action: none;
-}
 
 body {
     margin: 0;
@@ -10,14 +5,13 @@ body {
 }
 
 .game-container {
-    position: relative;
-    width: 100%;
-    height: 100%; 
-    overflow: hidden;
+    aspect-ratio: 6 / 8;
+    max-height: 100%;
+    margin: auto;
+    position: absolute;
+    inset: 0;
 }
 
-canvas#bevy {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain;
+.game-container>canvas {
+    position: absolute;
 }
