@@ -19,8 +19,7 @@ pub struct CameraFlag;
 
 impl Plugin for ConfigPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .insert_resource(Msaa { samples: 1 })
+        app.insert_resource(Msaa { samples: 1 })
             .insert_resource(bevy::render::texture::ImageSettings::default_nearest())
             .insert_resource(ClearColor(Color::rgb(0.4, 0.4, 0.4)))
             .insert_resource(WindowDescriptor {
@@ -32,7 +31,8 @@ impl Plugin for ConfigPlugin {
                 ..Default::default()
             })
             .add_startup_system(camera_setup)
-            .add_startup_system(window_icon_setup);
+            .add_startup_system(window_icon_setup)
+            .add_system(cursor_grab_system);
 
         #[cfg(debug_assertions)]
         {
@@ -43,13 +43,15 @@ impl Plugin for ConfigPlugin {
 }
 
 fn camera_setup(mut commands: Commands) {
-    commands.spawn_bundle(Camera2dBundle {
-        projection: OrthographicProjection {
-            scaling_mode: ScalingMode::FixedHorizontal(WIDTH),
+    commands
+        .spawn_bundle(Camera2dBundle {
+            projection: OrthographicProjection {
+                scaling_mode: ScalingMode::FixedHorizontal(WIDTH),
+                ..Default::default()
+            },
             ..Default::default()
-        },
-        ..Default::default()
-    }).insert(CameraFlag);
+        })
+        .insert(CameraFlag);
 }
 
 fn window_icon_setup(windows: NonSend<WinitWindows>) {
@@ -64,7 +66,29 @@ fn window_icon_setup(windows: NonSend<WinitWindows>) {
     };
 }
 
-pub fn get_world_position(raw_position: Vec2, window: &Window, camera_transform: &GlobalTransform) -> Vec3 {
+fn cursor_grab_system(
+    mut windows: ResMut<Windows>,
+    btn: Res<Input<MouseButton>>,
+    key: Res<Input<KeyCode>>,
+) {
+    let window = windows.get_primary_mut().unwrap();
+
+    if btn.just_pressed(MouseButton::Left) {
+        window.set_cursor_lock_mode(true);
+        window.set_cursor_visibility(false);
+    }
+
+    if key.just_pressed(KeyCode::Escape) {
+        window.set_cursor_lock_mode(false);
+        window.set_cursor_visibility(true);
+    }
+}
+
+pub fn get_world_position(
+    raw_position: Vec2,
+    window: &Window,
+    camera_transform: &GlobalTransform,
+) -> Vec3 {
     let adjusted_position = Vec3::new(
         raw_position.x / window.width() * WIDTH - WIDTH / 2.,
         raw_position.y / window.height() * HEIGHT - HEIGHT / 2.,

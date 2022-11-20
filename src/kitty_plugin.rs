@@ -1,7 +1,7 @@
-use std::time::Duration;
 use bevy::prelude::*;
+use std::time::Duration;
 
-use crate::{CameraFlag, get_world_position};
+use crate::{get_world_position, CameraFlag};
 
 pub struct KittyPlugin;
 
@@ -40,7 +40,7 @@ fn kitty_spawner(
     mut commands: Commands,
     mut tracker: ResMut<KittySpawnerTracker>,
     time: Res<Time>,
-    asset_server: Res<AssetServer>
+    asset_server: Res<AssetServer>,
 ) {
     tracker.timer.tick(time.delta());
 
@@ -65,7 +65,7 @@ fn kitty_mover(
     time: Res<Time>,
     windows: Res<Windows>,
     mut q: Query<&mut Transform, With<KittyFlag>>,
-    q_camera: Query<(&Camera, &GlobalTransform), With<CameraFlag>>
+    q_camera: Query<(&Camera, &GlobalTransform), With<CameraFlag>>,
 ) {
     let window = windows.get_primary().unwrap();
     let (_, camera_transform) = q_camera.single();
@@ -78,6 +78,6 @@ fn kitty_mover(
 
     for mut transform in q.iter_mut() {
         let diff = world_position - transform.translation;
-        transform.translation += diff * time.delta_seconds() * 10.0;
+        transform.translation.x += diff.x * time.delta_seconds() * 10.0;
     }
 }
