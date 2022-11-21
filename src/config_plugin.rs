@@ -1,16 +1,18 @@
 use std::io::Cursor;
 use winit::window::Icon;
 
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
+use bevy::diagnostic::LogDiagnosticsPlugin;
 use bevy::prelude::*;
 use bevy::render::camera::ScalingMode;
-// use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
-// use bevy::diagnostic::LogDiagnosticsPlugin;
 use bevy::window::WindowId;
 use bevy::winit::WinitWindows;
+use bevy_debug_text_overlay::{screen_print, OverlayPlugin};
+use bevy_inspector_egui::WorldInspectorPlugin;
 
-pub const ASPECT_RATIO: f32 = 8. / 6.;
+pub const ASPECT_RATIO: f32 = 5. / 8.;
 pub const WIDTH: f32 = 90.;
-pub const HEIGHT: f32 = WIDTH * ASPECT_RATIO;
+pub const HEIGHT: f32 = WIDTH / ASPECT_RATIO;
 
 pub struct ConfigPlugin;
 
@@ -20,31 +22,39 @@ pub struct CameraFlag;
 impl Plugin for ConfigPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Msaa { samples: 1 })
-            .insert_resource(bevy::render::texture::ImageSettings::default_nearest())
             .insert_resource(ClearColor(Color::rgb(0.4, 0.4, 0.4)))
-            .insert_resource(WindowDescriptor {
-                width: 600.,
-                height: 800.,
-                title: "beverage".to_string(),
-                canvas: Some("#bevy".to_owned()),
-                fit_canvas_to_parent: true,
-                ..Default::default()
-            })
+            .add_plugins(
+                DefaultPlugins
+                    .set(WindowPlugin {
+                        window: WindowDescriptor {
+                            title: "beverage".to_string(),
+                            canvas: Some("#bevy".to_owned()),
+                            fit_canvas_to_parent: true,
+                            width: 500.,
+                            height: 800.,
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .set(ImagePlugin::default_nearest()),
+            )
             .add_startup_system(camera_setup)
-            .add_startup_system(window_icon_setup)
-            .add_system(cursor_grab_system);
+            .add_startup_system(window_icon_setup);
 
         #[cfg(debug_assertions)]
         {
-            // app.add_plugin(FrameTimeDiagnosticsPlugin::default())
-            //     .add_plugin(LogDiagnosticsPlugin::default());
+            app.add_plugin(FrameTimeDiagnosticsPlugin::default())
+                .add_plugin(LogDiagnosticsPlugin::default())
+                .add_plugin(WorldInspectorPlugin::new())
+                .add_plugin(OverlayPlugin::default())
+                .add_system(debug_system);
         }
     }
 }
 
 fn camera_setup(mut commands: Commands) {
     commands
-        .spawn_bundle(Camera2dBundle {
+        .spawn(Camera2dBundle {
             projection: OrthographicProjection {
                 scaling_mode: ScalingMode::FixedHorizontal(WIDTH),
                 ..Default::default()
@@ -66,21 +76,14 @@ fn window_icon_setup(windows: NonSend<WinitWindows>) {
     };
 }
 
-fn cursor_grab_system(
-    mut windows: ResMut<Windows>,
-    btn: Res<Input<MouseButton>>,
-    key: Res<Input<KeyCode>>,
-) {
-    let window = windows.get_primary_mut().unwrap();
-
-    if btn.just_pressed(MouseButton::Left) {
-        window.set_cursor_lock_mode(true);
-        window.set_cursor_visibility(false);
-    }
-
-    if key.just_pressed(KeyCode::Escape) {
-        window.set_cursor_lock_mode(false);
-        window.set_cursor_visibility(true);
+fn debug_system(time: Res<Time>, windows: Res<Windows>) {
+    let current_time = time.elapsed_seconds();
+    let at_interval = |t: f32| current_time % t < time.delta_seconds();
+    if at_interval(1.) {
+        let window = windows.get_primary().unwrap();
+        if let Some(position) = window.cursor_position() {
+            screen_print!(col: Color::CYAN, "cursor_position: {}", position);
+        };
     }
 }
 

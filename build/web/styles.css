@@ -5,11 +5,18 @@ body {
 }
 
 .game-container {
-    aspect-ratio: 6 / 8;
+    aspect-ratio: 5 / 8;
     max-height: 100%;
     margin: auto;
     position: absolute;
     inset: 0;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    -moz-user-select: -moz-none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .game-container>canvas {
