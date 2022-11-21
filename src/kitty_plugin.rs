@@ -1,7 +1,22 @@
 use bevy::prelude::*;
 use std::time::Duration;
 
-use crate::{get_world_position, CameraFlag};
+use crate::{get_world_position, CameraFlag, HEIGHT};
+
+#[derive(Component)]
+struct KittyFlag;
+
+#[derive(Bundle)]
+struct KittyBundle {
+    _kitty_flag: KittyFlag,
+    sprite: SpriteBundle,
+}
+
+#[derive(Resource)]
+struct KittySpawnerTracker {
+    timer: Timer,
+    count: u8,
+}
 
 pub struct KittyPlugin;
 
@@ -13,50 +28,29 @@ impl Plugin for KittyPlugin {
     }
 }
 
-#[derive(Component)]
-struct KittyFlag;
-
-#[derive(Bundle)]
-struct KittyBundle {
-    _kitty_flag: KittyFlag,
-
-    #[bundle]
-    sprite: SpriteBundle,
-}
-
-fn kitty_setup(mut commands: Commands) {
+fn kitty_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(KittySpawnerTracker {
-        timer: Timer::new(Duration::from_secs(3), true),
+        timer: Timer::new(Duration::from_secs(3), TimerMode::Repeating),
         count: 0,
+    });
+    commands.spawn(KittyBundle {
+        _kitty_flag: KittyFlag,
+        sprite: SpriteBundle {
+            texture: asset_server.load("textures/kitty.png"),
+            transform: Transform {
+                translation: Vec3::new(0., HEIGHT / 2. - 13., 0.),
+                scale: Vec3::new(0.5, 0.5, 0.),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
     });
 }
 
-struct KittySpawnerTracker {
-    timer: Timer,
-    count: u8,
-}
-
-fn kitty_spawner(
-    mut commands: Commands,
-    mut tracker: ResMut<KittySpawnerTracker>,
-    time: Res<Time>,
-    asset_server: Res<AssetServer>,
-) {
+fn kitty_spawner(mut tracker: ResMut<KittySpawnerTracker>, time: Res<Time>) {
     tracker.timer.tick(time.delta());
 
     if tracker.timer.finished() && tracker.count < 1 {
-        commands.spawn_bundle(KittyBundle {
-            _kitty_flag: KittyFlag,
-            sprite: SpriteBundle {
-                texture: asset_server.load("textures/kitty.png"),
-                transform: Transform {
-                    translation: Vec3::new(0., 0., 0.),
-                    scale: Vec3::new(1., 1., 0.),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-        });
         tracker.count += 1;
     }
 }
@@ -78,6 +72,6 @@ fn kitty_mover(
 
     for mut transform in q.iter_mut() {
         let diff = world_position - transform.translation;
-        transform.translation.x += diff.x * time.delta_seconds() * 10.0;
+        transform.translation.x += diff.x * time.delta_seconds();
     }
 }
