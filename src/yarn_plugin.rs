@@ -144,7 +144,7 @@ fn yarn_wall_system(
             velocity.y *= -1.;
             screen_print!("top wall!");
         }
-        if transform.translation.y < (-HEIGHT / 2. + YARN_DIMENSIONS.x / 2.) && velocity.y < 0. {
+        if transform.translation.y < (-HEIGHT / 2. - YARN_DIMENSIONS.x / 2.) && velocity.y < 0. {
             tracker.count -= 1;
             commands.entity(entity).despawn();
         }
