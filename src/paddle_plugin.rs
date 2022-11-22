@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{get_world_position, CameraFlag, HEIGHT, WIDTH};
+use crate::{get_world_position, CameraFlag, Collider, HEIGHT, WIDTH};
 
 const PADDLE_DIMENSIONS: Vec2 = Vec2::new(30., 6.);
 
@@ -11,6 +11,7 @@ struct Paddle {
 
 #[derive(Bundle)]
 struct PaddleBundle {
+    _collider_flag: Collider,
     paddle: Paddle,
     sprite: SpriteBundle,
 }
@@ -25,11 +26,12 @@ impl Plugin for PaddlePlugin {
 
 fn paddle_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(PaddleBundle {
+        _collider_flag: Collider,
         paddle: Paddle {
             target_position: 0.,
         },
         sprite: SpriteBundle {
-            texture: asset_server.load("textures/paddle.png"),
+            texture: asset_server.load("textures/book.png"),
             sprite: Sprite {
                 custom_size: Some(PADDLE_DIMENSIONS),
                 ..default()
