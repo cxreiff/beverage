@@ -9,7 +9,7 @@ pub use crate::config_plugin::{
 
 use crate::kitty_plugin::KittyPlugin;
 use crate::paddle_plugin::PaddlePlugin;
-use crate::yarn_plugin::YarnPlugin;
+use crate::yarn_plugin::{Collider, YarnPlugin};
 use bevy::prelude::{App, Plugin};
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
