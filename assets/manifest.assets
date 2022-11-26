@@ -1,0 +1,17 @@
+({
+    "textures.kitty": File (
+        path: "textures/kitty.png",
+    ),
+    "textures.book": File (
+        path: "textures/book.png",
+    ),
+    "textures.yarn": File (
+        path: "textures/yarn.png",
+    ),
+    "textures.tuna": File (
+        path: "textures/tuna.png",
+    ),
+    "textures.border": File (
+        path: "textures/border.png",
+    ),
+})

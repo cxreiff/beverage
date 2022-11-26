@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::time::Duration;
 
-use crate::{get_world_position, CameraFlag, HEIGHT};
+use crate::{get_world_position, CameraFlag, GameState, TextureAssets, HEIGHT};
 
 #[derive(Component)]
 struct KittyFlag;
@@ -22,13 +22,16 @@ pub struct KittyPlugin;
 
 impl Plugin for KittyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(kitty_setup);
-        app.add_system(kitty_spawner);
-        app.add_system(kitty_mover);
+        app.add_system_set(SystemSet::on_enter(GameState::Play).with_system(kitty_setup))
+            .add_system_set(
+                SystemSet::on_update(GameState::Play)
+                    .with_system(kitty_spawner)
+                    .with_system(kitty_mover),
+            );
     }
 }
 
-fn kitty_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn kitty_setup(mut commands: Commands, textures: Res<TextureAssets>) {
     commands.insert_resource(KittySpawnerTracker {
         timer: Timer::new(Duration::from_secs(3), TimerMode::Repeating),
         count: 0,
@@ -36,13 +39,13 @@ fn kitty_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(KittyBundle {
         _kitty_flag: KittyFlag,
         sprite: SpriteBundle {
-            texture: asset_server.load("textures/kitty.png"),
+            texture: textures.kitty.clone(),
             transform: Transform {
                 translation: Vec3::new(0., HEIGHT / 2. - 13., 0.),
                 scale: Vec3::new(0.5, 0.5, 0.),
-                ..Default::default()
+                ..default()
             },
-            ..Default::default()
+            ..default()
         },
     });
 }

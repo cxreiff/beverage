@@ -23,8 +23,8 @@ dev = [
 
 [dependencies]
 bevy = { version = "0.9", default-features = false, features = ["bevy_asset", "bevy_winit", "render", "png", "x11"] }
-bevy_kira_audio = "0.12"
-bevy_asset_loader = "0.12"
+bevy_kira_audio = "0.13"
+bevy_asset_loader = { version = "0.14.1", features = ["standard_dynamic_assets"] }
 rand = "0.8.3"
 bevy-inspector-egui = "0.14.0"
 bevy-debug-text-overlay = "4.0.1"

@@ -1,14 +1,16 @@
 use std::io::Cursor;
 use winit::window::Icon;
 
-use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
-use bevy::diagnostic::LogDiagnosticsPlugin;
+// use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
+// use bevy::diagnostic::LogDiagnosticsPlugin;
 use bevy::prelude::*;
 use bevy::render::camera::ScalingMode;
 use bevy::window::WindowId;
 use bevy::winit::WinitWindows;
 use bevy_debug_text_overlay::{screen_print, OverlayPlugin};
-use bevy_inspector_egui::WorldInspectorPlugin;
+// use bevy_inspector_egui::WorldInspectorPlugin;
+
+use crate::GameState;
 
 pub const ASPECT_RATIO: f32 = 5. / 8.;
 pub const WIDTH: f32 = 90.;
@@ -43,10 +45,10 @@ impl Plugin for ConfigPlugin {
 
         #[cfg(debug_assertions)]
         {
-            app.add_plugin(FrameTimeDiagnosticsPlugin::default())
-                .add_plugin(LogDiagnosticsPlugin::default())
-                .add_plugin(WorldInspectorPlugin::new())
-                .add_plugin(OverlayPlugin::default())
+            app.add_plugin(OverlayPlugin::default())
+                // .add_plugin(FrameTimeDiagnosticsPlugin::default())
+                // .add_plugin(LogDiagnosticsPlugin::default())
+                // .add_plugin(WorldInspectorPlugin::new())
                 .add_system(debug_system);
         }
     }
@@ -76,11 +78,12 @@ fn window_icon_setup(windows: NonSend<WinitWindows>) {
     };
 }
 
-fn debug_system(time: Res<Time>, windows: Res<Windows>) {
+fn debug_system(time: Res<Time>, windows: Res<Windows>, app_state: Res<State<GameState>>) {
     let current_time = time.elapsed_seconds();
     let at_interval = |t: f32| current_time % t < time.delta_seconds();
     if at_interval(1.) {
         let window = windows.get_primary().unwrap();
+        screen_print!(col: Color::RED, "game state: {:?}", app_state.current());
         if let Some(position) = window.cursor_position() {
             screen_print!(col: Color::CYAN, "cursor_position: {}", position);
         };
