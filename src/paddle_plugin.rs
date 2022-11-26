@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{get_world_position, CameraFlag, Collider, HEIGHT, WIDTH};
+use crate::{get_world_position, CameraFlag, Collider, GameState, TextureAssets, HEIGHT, WIDTH};
 
 const PADDLE_DIMENSIONS: Vec2 = Vec2::new(30., 6.);
 
@@ -19,19 +19,21 @@ struct PaddleBundle {
 pub struct PaddlePlugin;
 impl Plugin for PaddlePlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(paddle_setup)
-            .add_system(paddle_movement_system);
+        app.add_system_set(SystemSet::on_enter(GameState::Play).with_system(paddle_setup))
+            .add_system_set(
+                SystemSet::on_update(GameState::Play).with_system(paddle_movement_system),
+            );
     }
 }
 
-fn paddle_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn paddle_setup(mut commands: Commands, textures: Res<TextureAssets>) {
     commands.spawn(PaddleBundle {
         _collider_flag: Collider,
         paddle: Paddle {
             target_position: 0.,
         },
         sprite: SpriteBundle {
-            texture: asset_server.load("textures/book.png"),
+            texture: textures.book.clone(),
             sprite: Sprite {
                 custom_size: Some(PADDLE_DIMENSIONS),
                 ..default()
@@ -59,8 +61,8 @@ fn paddle_movement_system(
         paddle.target_position = get_world_position(raw_position, window, camera_transform)
             .x
             .clamp(
-                -WIDTH / 2. + PADDLE_DIMENSIONS.x / 2. + 1.,
-                WIDTH / 2. - PADDLE_DIMENSIONS.x / 2. - 1.,
+                -WIDTH / 2. + PADDLE_DIMENSIONS.x / 2. + 4.,
+                WIDTH / 2. - PADDLE_DIMENSIONS.x / 2. - 4.,
             );
     };
 

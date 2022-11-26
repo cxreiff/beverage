@@ -4,9 +4,9 @@ use bevy_debug_text_overlay::screen_print;
 use rand::Rng;
 use std::time::Duration;
 
-use crate::{HEIGHT, WIDTH};
+use crate::{GameState, TextureAssets, HEIGHT, WIDTH};
 
-const YARN_SPEED: f32 = 20.;
+const YARN_SPEED: f32 = 30.;
 const YARN_DIMENSIONS: Vec2 = Vec2::new(10., 10.);
 const TUNA_DIMENSIONS: Vec2 = Vec2::new(20., 10.);
 
@@ -50,15 +50,18 @@ impl Plugin for YarnPlugin {
             count: 0,
             timer: Timer::new(Duration::from_secs(3), TimerMode::Repeating),
         })
-        .add_startup_system(yarn_setup)
-        .add_system(yarn_spawning_system)
-        .add_system(yarn_movement_system)
-        .add_system(yarn_wall_system)
-        .add_system(yarn_collision_system);
+        .add_system_set(SystemSet::on_enter(GameState::Play).with_system(yarn_setup))
+        .add_system_set(
+            SystemSet::on_update(GameState::Play)
+                .with_system(yarn_spawning_system)
+                .with_system(yarn_movement_system)
+                .with_system(yarn_wall_system)
+                .with_system(yarn_collision_system),
+        );
     }
 }
 
-fn yarn_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn yarn_setup(mut commands: Commands, textures: Res<TextureAssets>) {
     for translation in vec![
         Vec3::new(0., HEIGHT / 4., 0.),
         Vec3::new(-WIDTH / 4., HEIGHT / 4., 0.),
@@ -73,7 +76,7 @@ fn yarn_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             _tuna_flag: Tuna,
             _collider_flag: Collider,
             sprite: SpriteBundle {
-                texture: asset_server.load("textures/tuna.png"),
+                texture: textures.tuna.clone(),
                 sprite: Sprite {
                     custom_size: Some(TUNA_DIMENSIONS),
                     ..default()
@@ -90,7 +93,7 @@ fn yarn_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn yarn_spawning_system(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    textures: Res<TextureAssets>,
     time: Res<Time>,
     mut tracker: ResMut<YarnTracker>,
 ) {
@@ -104,7 +107,7 @@ fn yarn_spawning_system(
                 Vec2::new(rng.gen::<f32>() - 0.5, rng.gen::<f32>() - 0.5).normalize(),
             ),
             sprite: SpriteBundle {
-                texture: asset_server.load("textures/yarn.png"),
+                texture: textures.yarn.clone(),
                 sprite: Sprite {
                     custom_size: Some(YARN_DIMENSIONS),
                     ..default()
@@ -132,15 +135,18 @@ fn yarn_wall_system(
     mut q_yarn: Query<(Entity, &mut Velocity, &Transform), With<Yarn>>,
 ) {
     for (entity, mut velocity, transform) in q_yarn.iter_mut() {
-        if transform.translation.x < (-WIDTH / 2. + YARN_DIMENSIONS.x / 2.) && velocity.x < 0. {
+        if transform.translation.x < (-WIDTH / 2. + YARN_DIMENSIONS.x / 2. + 2.) && velocity.x < 0.
+        {
             velocity.x *= -1.;
             screen_print!("left wall!");
         }
-        if transform.translation.x > (WIDTH / 2. - YARN_DIMENSIONS.x / 2.) && velocity.x >= 0. {
+        if transform.translation.x > (WIDTH / 2. - YARN_DIMENSIONS.x / 2. - 2.) && velocity.x >= 0.
+        {
             velocity.x *= -1.;
             screen_print!("right wall!");
         }
-        if transform.translation.y > (HEIGHT / 2. - YARN_DIMENSIONS.x / 2.) && velocity.y >= 0. {
+        if transform.translation.y > (HEIGHT / 2. - YARN_DIMENSIONS.x / 2. - 2.) && velocity.y >= 0.
+        {
             velocity.y *= -1.;
             screen_print!("top wall!");
         }
