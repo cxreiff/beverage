@@ -9,10 +9,14 @@ pub struct TextureAssets {
     pub kitty: Handle<Image>,
     #[asset(key = "textures.book")]
     pub book: Handle<Image>,
-    #[asset(key = "textures.yarn")]
-    pub yarn: Handle<Image>,
-    #[asset(key = "textures.tuna")]
-    pub tuna: Handle<Image>,
+    #[asset(key = "textures.yarn0")]
+    pub yarn0: Handle<Image>,
+    #[asset(key = "textures.yarn1")]
+    pub yarn1: Handle<Image>,
+    #[asset(key = "textures.yarn2")]
+    pub yarn2: Handle<Image>,
+    #[asset(key = "textures.brick")]
+    pub brick: Handle<Image>,
     #[asset(key = "textures.border")]
     pub border: Handle<Image>,
 }
