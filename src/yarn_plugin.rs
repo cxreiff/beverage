@@ -1,18 +1,18 @@
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::{collide, Collision};
-use bevy_debug_text_overlay::screen_print;
 use rand::Rng;
 use std::time::Duration;
 
 use crate::{GameState, TextureAssets, HEIGHT, WIDTH};
 
-const YARN_SPEED: f32 = 30.;
+const YARN_SPEED: f32 = 36.;
 const YARN_DIMENSIONS: Vec2 = Vec2::new(10., 10.);
-const TUNA_DIMENSIONS: Vec2 = Vec2::new(20., 10.);
+const TUNA_DIMENSIONS: Vec2 = Vec2::new(13., 8.);
 
 #[derive(Resource)]
 struct YarnTracker {
-    count: u8,
+    current_count: u8,
+    spawn_count: u16,
     timer: Timer,
 }
 
@@ -47,7 +47,8 @@ pub struct YarnPlugin;
 impl Plugin for YarnPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(YarnTracker {
-            count: 0,
+            current_count: 0,
+            spawn_count: 0,
             timer: Timer::new(Duration::from_secs(3), TimerMode::Repeating),
         })
         .add_system_set(SystemSet::on_enter(GameState::Play).with_system(yarn_setup))
@@ -63,12 +64,46 @@ impl Plugin for YarnPlugin {
 
 fn yarn_setup(mut commands: Commands, textures: Res<TextureAssets>) {
     for translation in vec![
+        Vec3::new(-WIDTH / 3., HEIGHT / 4. - 30., 0.),
+        Vec3::new(-WIDTH / 6., HEIGHT / 4. - 30., 0.),
+        Vec3::new(0., HEIGHT / 4. - 30., 0.),
+        Vec3::new(WIDTH / 6., HEIGHT / 4. - 30., 0.),
+        Vec3::new(WIDTH / 3., HEIGHT / 4. - 30., 0.),
+        Vec3::new(-WIDTH / 3., HEIGHT / 4. - 20., 0.),
+        Vec3::new(-WIDTH / 6., HEIGHT / 4. - 20., 0.),
+        Vec3::new(0., HEIGHT / 4. - 20., 0.),
+        Vec3::new(WIDTH / 6., HEIGHT / 4. - 20., 0.),
+        Vec3::new(WIDTH / 3., HEIGHT / 4. - 20., 0.),
+        Vec3::new(-WIDTH / 3., HEIGHT / 4., 0.),
+        Vec3::new(-WIDTH / 6., HEIGHT / 4., 0.),
         Vec3::new(0., HEIGHT / 4., 0.),
-        Vec3::new(-WIDTH / 4., HEIGHT / 4., 0.),
-        Vec3::new(WIDTH / 4., HEIGHT / 4., 0.),
+        Vec3::new(WIDTH / 6., HEIGHT / 4., 0.),
+        Vec3::new(WIDTH / 3., HEIGHT / 4., 0.),
+        Vec3::new(-WIDTH / 3., HEIGHT / 4. - 10., 0.),
+        Vec3::new(-WIDTH / 6., HEIGHT / 4. - 10., 0.),
         Vec3::new(0., HEIGHT / 4. - 10., 0.),
-        Vec3::new(-WIDTH / 4., HEIGHT / 4. - 10., 0.),
-        Vec3::new(WIDTH / 4., HEIGHT / 4. - 10., 0.),
+        Vec3::new(WIDTH / 6., HEIGHT / 4. - 10., 0.),
+        Vec3::new(WIDTH / 3., HEIGHT / 4. - 10., 0.),
+        Vec3::new(-WIDTH / 3., HEIGHT / 4., 0.),
+        Vec3::new(-WIDTH / 6., HEIGHT / 4., 0.),
+        Vec3::new(0., HEIGHT / 4. - 10., 0.),
+        Vec3::new(WIDTH / 6., HEIGHT / 4., 0.),
+        Vec3::new(WIDTH / 3., HEIGHT / 4., 0.),
+        Vec3::new(-WIDTH / 3., HEIGHT / 4. + 10., 0.),
+        Vec3::new(-WIDTH / 6., HEIGHT / 4. + 10., 0.),
+        Vec3::new(0., HEIGHT / 4. + 10., 0.),
+        Vec3::new(WIDTH / 6., HEIGHT / 4. + 10., 0.),
+        Vec3::new(WIDTH / 3., HEIGHT / 4. + 10., 0.),
+        Vec3::new(-WIDTH / 3., HEIGHT / 4. + 20., 0.),
+        Vec3::new(-WIDTH / 6., HEIGHT / 4. + 20., 0.),
+        Vec3::new(0., HEIGHT / 4. + 20., 0.),
+        Vec3::new(WIDTH / 6., HEIGHT / 4. + 20., 0.),
+        Vec3::new(WIDTH / 3., HEIGHT / 4. + 20., 0.),
+        Vec3::new(-WIDTH / 3., HEIGHT / 4. + 30., 0.),
+        Vec3::new(-WIDTH / 6., HEIGHT / 4. + 30., 0.),
+        Vec3::new(0., HEIGHT / 4. + 30., 0.),
+        Vec3::new(WIDTH / 6., HEIGHT / 4. + 30., 0.),
+        Vec3::new(WIDTH / 3., HEIGHT / 4. + 30., 0.),
     ]
     .iter()
     {
@@ -76,7 +111,7 @@ fn yarn_setup(mut commands: Commands, textures: Res<TextureAssets>) {
             _tuna_flag: Tuna,
             _collider_flag: Collider,
             sprite: SpriteBundle {
-                texture: textures.tuna.clone(),
+                texture: textures.brick.clone(),
                 sprite: Sprite {
                     custom_size: Some(TUNA_DIMENSIONS),
                     ..default()
@@ -97,25 +132,11 @@ fn yarn_spawning_system(
     time: Res<Time>,
     mut tracker: ResMut<YarnTracker>,
 ) {
-    let mut rng = rand::thread_rng();
     tracker.timer.tick(time.delta());
-    if tracker.timer.finished() && tracker.count < 3 {
-        commands.spawn(YarnBundle {
-            _yarn_flag: Yarn,
-            _collider_flag: Collider,
-            velocity: Velocity(
-                Vec2::new(rng.gen::<f32>() - 0.5, rng.gen::<f32>() - 0.5).normalize(),
-            ),
-            sprite: SpriteBundle {
-                texture: textures.yarn.clone(),
-                sprite: Sprite {
-                    custom_size: Some(YARN_DIMENSIONS),
-                    ..default()
-                },
-                ..default()
-            },
-        });
-        tracker.count += 1;
+    if tracker.timer.finished() && tracker.current_count < 3 {
+        commands.spawn(generate_yarn(textures, tracker.spawn_count));
+        tracker.current_count += 1;
+        tracker.spawn_count += 1;
     }
 }
 
@@ -138,20 +159,17 @@ fn yarn_wall_system(
         if transform.translation.x < (-WIDTH / 2. + YARN_DIMENSIONS.x / 2. + 2.) && velocity.x < 0.
         {
             velocity.x *= -1.;
-            screen_print!("left wall!");
         }
         if transform.translation.x > (WIDTH / 2. - YARN_DIMENSIONS.x / 2. - 2.) && velocity.x >= 0.
         {
             velocity.x *= -1.;
-            screen_print!("right wall!");
         }
         if transform.translation.y > (HEIGHT / 2. - YARN_DIMENSIONS.x / 2. - 2.) && velocity.y >= 0.
         {
             velocity.y *= -1.;
-            screen_print!("top wall!");
         }
         if transform.translation.y < (-HEIGHT / 2. - YARN_DIMENSIONS.x / 2.) && velocity.y < 0. {
-            tracker.count -= 1;
+            tracker.current_count -= 1;
             commands.entity(entity).despawn();
         }
     }
@@ -169,17 +187,9 @@ fn yarn_collision_system(
         for (entity_collider, transform_collider, sprite_collider, is_tuna) in q_collider.iter() {
             if let Some(collision) = collide(
                 transform_yarn.translation,
-                sprite_yarn
-                    .custom_size
-                    .or(Some(Vec2::new(10., 10.)))
-                    .unwrap()
-                    * 0.95,
+                sprite_yarn.custom_size.unwrap_or(Vec2::new(10., 10.)) * 0.95,
                 transform_collider.translation,
-                sprite_collider
-                    .custom_size
-                    .or(Some(Vec2::new(10., 10.)))
-                    .unwrap()
-                    * 0.95,
+                sprite_collider.custom_size.unwrap_or(Vec2::new(10., 10.)) * 0.95,
             ) {
                 if is_tuna.is_some() {
                     commands.entity(entity_collider).despawn();
@@ -194,5 +204,33 @@ fn yarn_collision_system(
                 }
             }
         }
+    }
+}
+
+fn generate_yarn(textures: Res<TextureAssets>, spawn_count: u16) -> YarnBundle {
+    let mut rng = rand::thread_rng();
+    let texture = match spawn_count % 3 {
+        0 => &textures.yarn0,
+        1 => &textures.yarn1,
+        2 => &textures.yarn2,
+        _ => unreachable!(),
+    }
+    .clone();
+    YarnBundle {
+        _yarn_flag: Yarn,
+        _collider_flag: Collider,
+        velocity: Velocity(Vec2::new(rng.gen::<f32>() - 0.5, rng.gen::<f32>()).normalize()),
+        sprite: SpriteBundle {
+            texture,
+            sprite: Sprite {
+                custom_size: Some(YARN_DIMENSIONS),
+                ..default()
+            },
+            transform: Transform {
+                translation: Vec3::new(0., -30., 0.),
+                ..default()
+            },
+            ..default()
+        },
     }
 }

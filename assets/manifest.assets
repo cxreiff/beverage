@@ -5,11 +5,17 @@
     "textures.book": File (
         path: "textures/book.png",
     ),
-    "textures.yarn": File (
-        path: "textures/yarn.png",
+    "textures.yarn0": File (
+        path: "textures/yarn0.png",
     ),
-    "textures.tuna": File (
-        path: "textures/tuna.png",
+    "textures.yarn1": File (
+        path: "textures/yarn1.png",
+    ),
+    "textures.yarn2": File (
+        path: "textures/yarn2.png",
+    ),
+    "textures.brick": File (
+        path: "textures/brick.png",
     ),
     "textures.border": File (
         path: "textures/border.png",
