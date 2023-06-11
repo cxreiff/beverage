@@ -3,8 +3,8 @@
 
 use bevy::prelude::App;
 
-use beverage::ConfigPlugin;
-use beverage::GamePlugin;
+use breakout::ConfigPlugin;
+use breakout::GamePlugin;
 
 fn main() {
     App::new()

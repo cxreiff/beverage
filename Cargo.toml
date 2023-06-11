@@ -1,8 +1,8 @@
 [package]
-name = "beverage"
+name = "breakout"
 version = "0.1.0"
 publish = false
-authors = ["Cooper Reiff <jax@jaxreiff.com>"]
+authors = ["Cooper Reiff <dev@cooperreiff.com>"]
 edition = "2021"
 exclude = ["dist", "build", "assets", "credits"]
 
