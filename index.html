@@ -30,7 +30,9 @@ body {
     position: absolute;
 }
 </style>
-    </head>
+    
+<link rel="preload" href="/breakout/breakout-d694d7668b5630a5_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/breakout/breakout-d694d7668b5630a5.js"></head>
     <body>
         <script>// Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
 // https://developers.google.com/web/updates/2018/11/web-audio-autoplay#moving-forward
@@ -102,4 +104,4 @@ body {
         </div>
     
 
-</body></html>
+<script type="module">import init from '/breakout/breakout-d694d7668b5630a5.js';init('/breakout/breakout-d694d7668b5630a5_bg.wasm');</script></body></html>
